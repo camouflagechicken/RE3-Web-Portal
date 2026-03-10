@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resident Evil 4</title>
+    <title>RESIDENT EVIL 3: NEMESIS</title>
     <style>
         body, html {
             margin: 0;
@@ -55,6 +55,7 @@
             color: rgba(200, 200, 200, 0.8);
             text-transform: uppercase;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         #data-stream-container {
@@ -89,6 +90,91 @@
         #boot-btn:hover {
             border-color: #fff;
             color: #fff;
+        }
+
+        #controls-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        #controls-btn:hover {
+            border-color: #aaa;
+            color: #fff;
+        }
+
+        #controls-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid #333;
+            padding: 30px;
+            border-radius: 5px;
+            text-align: left;
+            max-width: 400px;
+            width: 80%;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .modal-content h2 { 
+            margin-top: 0; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+            text-align: center; 
+            color: #ccc;
+        }
+
+        .modal-content ul { 
+            list-style: none; 
+            padding: 0; 
+            line-height: 2; 
+        }
+
+        .modal-content li { 
+            display: flex; 
+            justify-content: space-between; 
+            border-bottom: 1px solid #222; 
+        }
+
+        .key-badge { 
+            background: #333; 
+            padding: 2px 8px; 
+            border-radius: 3px; 
+            font-weight: bold; 
+            color: #fff;
+        }
+
+        #close-modal-btn {
+            margin-top: 20px; 
+            width: 100%; 
+            padding: 10px; 
+            background: #222; 
+            border: 1px solid #444; 
+            color: #fff; 
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.3s;
+        }
+
+        #close-modal-btn:hover { 
+            background: #444; 
         }
 
         #controller-layer {
@@ -134,12 +220,30 @@
     <div id="viewport-container">
         
         <div id="architect-title">
-            <h1>Resident Evil 4</h1>
-            <button id="boot-btn">INITIALIZE BOOT SEQUENCE</button>
+            <h1>RESIDENT EVIL 3: NEMESIS</h1>
+            <button id="boot-btn">ENTER RACCOON CITY</button>
+            <button id="controls-btn">VIEW CONTROLS</button>
             <div id="data-stream-container">
                 <div id="data-stream-bar"></div>
             </div>
             <div id="stream-text" style="margin-top:10px; font-size:0.8rem; color:#666; display:none;">ESTABLISHING CONNECTION...</div>
+        </div>
+
+        <div id="controls-modal">
+            <div class="modal-content">
+                <h2>SYSTEM LEDGER</h2>
+                <ul>
+                    <li><span>D-Pad</span> <span class="key-badge">Arrow Keys</span></li>
+                    <li><span>Cross (X)</span> <span class="key-badge">Z</span></li>
+                    <li><span>Circle (O)</span> <span class="key-badge">X</span></li>
+                    <li><span>Square (□)</span> <span class="key-badge">A</span></li>
+                    <li><span>Triangle (△)</span> <span class="key-badge">S</span></li>
+                    <li><span>L1 / R1</span> <span class="key-badge">Q / W</span></li>
+                    <li><span>Start</span> <span class="key-badge">Enter</span></li>
+                    <li><span>Select</span> <span class="key-badge">Shift</span></li>
+                </ul>
+                <button id="close-modal-btn">ACKNOWLEDGE</button>
+            </div>
         </div>
 
         <div id="ejs-target"></div>
@@ -169,7 +273,7 @@
 
     <script>
         let db;
-        const dbName = "ArchitectLedger_RE4";
+        const dbName = "ArchitectLedger_RE3";
         const storeName = "SaveStates";
 
         const initDB = new Promise((resolve, reject) => {
@@ -215,6 +319,18 @@
             });
         }
 
+        const controlsBtn = document.getElementById('controls-btn');
+        const controlsModal = document.getElementById('controls-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        controlsBtn.addEventListener('click', () => {
+            controlsModal.style.display = 'flex';
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            controlsModal.style.display = 'none';
+        });
+
         const bootBtn = document.getElementById('boot-btn');
         const titleOverlay = document.getElementById('architect-title');
         const streamContainer = document.getElementById('data-stream-container');
@@ -223,95 +339,94 @@
 
         bootBtn.addEventListener('click', async () => {
             bootBtn.style.display = 'none';
+            controlsBtn.style.display = 'none';
             streamContainer.style.display = 'block';
             streamText.style.display = 'block';
 
             if (performance && performance.memory) {
                 const heapLimit = performance.memory.jsHeapSizeLimit;
-                const isoSizeEstimated = 1.2 * 1024 * 1024 * 1024; // 1.2GB estimated
+                const isoSizeEstimated = 0.7 * 1024 * 1024 * 1024;
                 if (heapLimit < isoSizeEstimated) {
-                    console.warn(`[Memory Guard] WARNING: Browser JS Heap Limit (${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB) is smaller than the 1.2GB ISO. The tab will likely crash during buffer.`);
+                    console.warn(`[Memory Guard] WARNING: Browser JS Heap Limit (${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB) is unusually low. The tab may crash during buffer.`);
                 } else {
                     console.log(`[Memory Guard] VRAM Heap Check Passed: ${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB available.`);
                 }
-            } else {
-                console.log("[Memory Guard] performance.memory API not supported on this browser.");
             }
 
             await initDB;
 
-            const totalChunks = 27;
-            const chunkArray =[];
-            const baseUrl = 'https://github.com/camouflagechicken/RE4-Web-Portal/releases/download/v1.0-Data/Resident.Evil.4.iso.part';
+            const hfDirectLink = 'https://huggingface.co/datasets/camouflagechicken/RE3-Data-Core/resolve/main/Resident%20Evil%203%20-%20Nemesis.chd';
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', hfDirectLink, true);
+            xhr.responseType = 'blob';
 
-try {
-    for (let i = 0; i < totalChunks; i++) {
-        streamText.innerText = `ASSEMBLING CHUNK ${i + 1} OF ${totalChunks}...`;
-        
-        // Direct siphon. No middleman.
-        const response = await fetch(baseUrl + i);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status} on chunk part${i}`);
-                    }
-                    
-                    const buffer = await response.arrayBuffer();
-                    chunkArray.push(buffer);
-                    
-                    const percentComplete = ((i + 1) / totalChunks) * 100;
+            xhr.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
                     streamBar.style.width = `${percentComplete}%`;
+                    streamText.innerText = `Siphoning Payload... ${percentComplete.toFixed(2)}%`;
+                } else {
+                    streamText.innerText = `Siphoning Payload... (${(event.loaded / 1048576).toFixed(2)} MB loaded)`;
                 }
+            };
 
-                streamText.innerText = `FUSING CHUNKS IN VRAM...`;
-                const finalBlob = new Blob(chunkArray, { type: 'application/octet-stream' });
-                const objectUrl = URL.createObjectURL(finalBlob);
+            xhr.onload = () => {
+                if (xhr.status === 200 || xhr.status === 206) {
+                    streamText.innerText = `BUFFERING INTO ENGINE...`;
+                    const blob = xhr.response;
+                    const objectUrl = URL.createObjectURL(blob);
+                    
+                    window.EJS_player = '#ejs-target';
+                    window.EJS_core = 'pcsx_rearmed'; 
+                    window.EJS_gameName = 'Resident Evil 3: Nemesis';
+                    window.EJS_gameUrl = objectUrl; 
+                    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
+                    window.EJS_color = '#000000';
+                    window.EJS_startOnLoaded = true;
+                    window.EJS_biosUrl = ''; 
 
-                streamText.innerText = `BUFFERING INTO ENGINE...`;
-                
-                window.EJS_player = '#ejs-target';
-                window.EJS_core = 'play'; 
-                window.EJS_gameName = 'Resident Evil 4';
-                window.EJS_gameUrl = objectUrl; 
-                window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
-                window.EJS_color = '#000000';
-                window.EJS_startOnLoaded = true;
-                window.EJS_biosUrl = ''; 
-
-                window.EJS_onSaveState = function(data) {
-                    const tx = db.transaction(storeName, "readwrite");
-                    const store = tx.objectStore(storeName);
-                    store.put({ id: "slot1", stateData: data });
-                    console.log("[Ledger] State committed to local RAM.");
-                };
-
-                window.EJS_onLoadState = function() {
-                    return new Promise((resolve) => {
-                        const tx = db.transaction(storeName, "readonly");
+                    window.EJS_onSaveState = function(data) {
+                        const tx = db.transaction(storeName, "readwrite");
                         const store = tx.objectStore(storeName);
-                        const request = store.get("slot1");
-                        request.onsuccess = (e) => {
-                            if(e.target.result) resolve(e.target.result.stateData);
-                            else resolve(null);
-                        };
-                    });
-                };
+                        store.put({ id: "slot1", stateData: data });
+                        console.log("[Ledger] State committed to local RAM.");
+                    };
 
-                const script = document.createElement('script');
-                script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
-                document.body.appendChild(script);
+                    window.EJS_onLoadState = function() {
+                        return new Promise((resolve) => {
+                            const tx = db.transaction(storeName, "readonly");
+                            const store = tx.objectStore(storeName);
+                            const request = store.get("slot1");
+                            request.onsuccess = (e) => {
+                                if(e.target.result) resolve(e.target.result.stateData);
+                                else resolve(null);
+                            };
+                        });
+                    };
 
-                window.EJS_onGameStart = function() {
-                    setTimeout(() => {
-                        titleOverlay.style.opacity = '0';
-                        setTimeout(() => titleOverlay.remove(), 1500);
-                    }, 500);
-                };
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+                    document.body.appendChild(script);
 
-            } catch (error) {
-                console.error("[Assembly Line] Failed:", error);
-                streamText.innerText = `CRITICAL ERROR: Siphon Failed (${error.message})`;
+                    window.EJS_onGameStart = function() {
+                        setTimeout(() => {
+                            titleOverlay.style.opacity = '0';
+                            setTimeout(() => titleOverlay.remove(), 1500);
+                        }, 500);
+                    };
+                } else {
+                    streamText.innerText = `CRITICAL ERROR: Siphon Failed (HTTP ${xhr.status})`;
+                    streamBar.style.backgroundColor = '#ff0000';
+                }
+            };
+
+            xhr.onerror = () => {
+                streamText.innerText = `CRITICAL ERROR: Network Failure / CORS Block.`;
                 streamBar.style.backgroundColor = '#ff0000';
-            }
+            };
+
+            xhr.send();
         });
     </script>
 </body>
