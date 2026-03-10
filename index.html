@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resident Evil 4</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        #viewport-container {
+            position: relative;
+            width: 100vw;
+            max-width: 177.78vh;
+            height: 56.25vw;
+            max-height: 100vh;
+            background-color: #050505;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+
+        #ejs-target {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        #architect-title {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            background: #000;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #architect-title h1 {
+            font-size: 2.5vw;
+            letter-spacing: 0.5vw;
+            font-weight: 300;
+            color: rgba(200, 200, 200, 0.8);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        #data-stream-container {
+            width: 40%;
+            height: 2px;
+            background: #222;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+
+        #data-stream-bar {
+            position: absolute;
+            top: 0; left: 0; height: 100%; width: 0%;
+            background: #888;
+            box-shadow: 0 0 10px #fff;
+            transition: width 0.1s linear;
+        }
+
+        #boot-btn {
+            padding: 10px 30px;
+            background: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        #boot-btn:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        #controller-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        .btn {
+            position: absolute;
+            background-color: #fff;
+            opacity: 0.3;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            user-select: none;
+            pointer-events: auto;
+            border-radius: 50%;
+        }
+        
+        .btn:active { opacity: 0.6; }
+
+        .btn-shoulder { width: 8%; height: 12%; border-radius: 8px; top: 5%; }
+        #L1 { left: 5%; } #R1 { right: 5%; }
+        .cluster-dpad { position: absolute; bottom: 10%; left: 5%; width: 20%; aspect-ratio: 1; pointer-events: none; }
+        .btn-dpad { width: 33%; height: 33%; border-radius: 4px; }
+        #DPAD_UP { top: 0; left: 33.5%; } #DPAD_DOWN { bottom: 0; left: 33.5%; }
+        #DPAD_LEFT { top: 33.5%; left: 0; } #DPAD_RIGHT { top: 33.5%; right: 0; }
+        .cluster-action { position: absolute; bottom: 10%; right: 5%; width: 20%; aspect-ratio: 1; pointer-events: none; }
+        .btn-action { width: 30%; height: 30%; }
+        #TRIANGLE { top: 0; left: 35%; } #CROSS { bottom: 0; left: 35%; }
+        #SQUARE { top: 35%; left: 0; } #CIRCLE { top: 35%; right: 0; }
+        .cluster-center { position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%); width: 25%; height: 8%; display: flex; justify-content: space-between; pointer-events: none; }
+        .btn-menu { position: relative; width: 45%; height: 100%; border-radius: 20px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div id="viewport-container">
+        
+        <div id="architect-title">
+            <h1>Resident Evil 4</h1>
+            <button id="boot-btn">INITIALIZE BOOT SEQUENCE</button>
+            <div id="data-stream-container">
+                <div id="data-stream-bar"></div>
+            </div>
+            <div id="stream-text" style="margin-top:10px; font-size:0.8rem; color:#666; display:none;">ESTABLISHING CONNECTION...</div>
+        </div>
+
+        <div id="ejs-target"></div>
+
+        <div id="controller-layer">
+            <div class="btn btn-shoulder" id="L1" data-btn="L1">L1</div>
+            <div class="btn btn-shoulder" id="R1" data-btn="R1">R1</div>
+            <div class="cluster-dpad">
+                <div class="btn btn-dpad" id="DPAD_UP" data-btn="DPAD_UP">▲</div>
+                <div class="btn btn-dpad" id="DPAD_DOWN" data-btn="DPAD_DOWN">▼</div>
+                <div class="btn btn-dpad" id="DPAD_LEFT" data-btn="DPAD_LEFT">◄</div>
+                <div class="btn btn-dpad" id="DPAD_RIGHT" data-btn="DPAD_RIGHT">►</div>
+            </div>
+            <div class="cluster-center">
+                <div class="btn btn-menu" id="SELECT" data-btn="SELECT">SELECT</div>
+                <div class="btn btn-menu" id="START" data-btn="START">START</div>
+            </div>
+            <div class="cluster-action">
+                <div class="btn btn-action" id="TRIANGLE" data-btn="TRIANGLE">△</div>
+                <div class="btn btn-action" id="SQUARE" data-btn="SQUARE">□</div>
+                <div class="btn btn-action" id="CIRCLE" data-btn="CIRCLE">○</div>
+                <div class="btn btn-action" id="CROSS" data-btn="CROSS">X</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let db;
+        const dbName = "ArchitectLedger_RE4";
+        const storeName = "SaveStates";
+
+        const initDB = new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (e) => {
+                let localDB = e.target.result;
+                if (!localDB.objectStoreNames.contains(storeName)) {
+                    localDB.createObjectStore(storeName, { keyPath: "id" });
+                }
+            };
+            request.onsuccess = (e) => {
+                db = e.target.result;
+                console.log("[Ledger] Successfully mounted pre-flight. Storage verified.");
+                resolve();
+            };
+            request.onerror = (e) => reject(e);
+        });
+
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const controllerLayer = document.getElementById('controller-layer');
+
+        if (isTouchDevice) {
+            controllerLayer.style.display = 'block';
+            
+            const buttons = document.querySelectorAll('.btn');
+            const touchMap = {
+                'DPAD_UP': 'ArrowUp', 'DPAD_DOWN': 'ArrowDown', 'DPAD_LEFT': 'ArrowLeft', 'DPAD_RIGHT': 'ArrowRight',
+                'CROSS': 'z', 'CIRCLE': 'x', 'SQUARE': 'a', 'TRIANGLE': 's',
+                'L1': 'q', 'R1': 'w', 'START': 'Enter', 'SELECT': 'Shift'
+            };
+
+            function dispatchTouch(key, type) {
+                const ejsIframe = document.querySelector('#ejs-target iframe');
+                if (ejsIframe && ejsIframe.contentDocument) {
+                    ejsIframe.contentDocument.dispatchEvent(new KeyboardEvent(type, { key: touchMap[key], bubbles: true }));
+                }
+            }
+
+            buttons.forEach(btn => {
+                const id = btn.getAttribute('data-btn');
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); dispatchTouch(id, 'keydown'); }, { passive: false });
+                btn.addEventListener('touchend', (e) => { e.preventDefault(); dispatchTouch(id, 'keyup'); }, { passive: false });
+            });
+        }
+
+        const bootBtn = document.getElementById('boot-btn');
+        const titleOverlay = document.getElementById('architect-title');
+        const streamContainer = document.getElementById('data-stream-container');
+        const streamBar = document.getElementById('data-stream-bar');
+        const streamText = document.getElementById('stream-text');
+
+        bootBtn.addEventListener('click', async () => {
+            bootBtn.style.display = 'none';
+            streamContainer.style.display = 'block';
+            streamText.style.display = 'block';
+
+            if (performance && performance.memory) {
+                const heapLimit = performance.memory.jsHeapSizeLimit;
+                const isoSizeEstimated = 1.2 * 1024 * 1024 * 1024; // 1.2GB estimated
+                if (heapLimit < isoSizeEstimated) {
+                    console.warn(`[Memory Guard] WARNING: Browser JS Heap Limit (${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB) is smaller than the 1.2GB ISO. The tab will likely crash during buffer.`);
+                } else {
+                    console.log(`[Memory Guard] VRAM Heap Check Passed: ${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB available.`);
+                }
+            } else {
+                console.log("[Memory Guard] performance.memory API not supported on this browser.");
+            }
+
+            await initDB;
+
+            const totalChunks = 27;
+            const chunkArray =[];
+            const baseUrl = 'https://github.com/camouflagechicken/RE4-Web-Portal/releases/download/v1.0-Data/Resident.Evil.4.iso.part';
+
+try {
+    for (let i = 0; i < totalChunks; i++) {
+        streamText.innerText = `ASSEMBLING CHUNK ${i + 1} OF ${totalChunks}...`;
+        
+        // Direct siphon. No middleman.
+        const response = await fetch(baseUrl + i);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} on chunk part${i}`);
+                    }
+                    
+                    const buffer = await response.arrayBuffer();
+                    chunkArray.push(buffer);
+                    
+                    const percentComplete = ((i + 1) / totalChunks) * 100;
+                    streamBar.style.width = `${percentComplete}%`;
+                }
+
+                streamText.innerText = `FUSING CHUNKS IN VRAM...`;
+                const finalBlob = new Blob(chunkArray, { type: 'application/octet-stream' });
+                const objectUrl = URL.createObjectURL(finalBlob);
+
+                streamText.innerText = `BUFFERING INTO ENGINE...`;
+                
+                window.EJS_player = '#ejs-target';
+                window.EJS_core = 'play'; 
+                window.EJS_gameName = 'Resident Evil 4';
+                window.EJS_gameUrl = objectUrl; 
+                window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
+                window.EJS_color = '#000000';
+                window.EJS_startOnLoaded = true;
+                window.EJS_biosUrl = ''; 
+
+                window.EJS_onSaveState = function(data) {
+                    const tx = db.transaction(storeName, "readwrite");
+                    const store = tx.objectStore(storeName);
+                    store.put({ id: "slot1", stateData: data });
+                    console.log("[Ledger] State committed to local RAM.");
+                };
+
+                window.EJS_onLoadState = function() {
+                    return new Promise((resolve) => {
+                        const tx = db.transaction(storeName, "readonly");
+                        const store = tx.objectStore(storeName);
+                        const request = store.get("slot1");
+                        request.onsuccess = (e) => {
+                            if(e.target.result) resolve(e.target.result.stateData);
+                            else resolve(null);
+                        };
+                    });
+                };
+
+                const script = document.createElement('script');
+                script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+                document.body.appendChild(script);
+
+                window.EJS_onGameStart = function() {
+                    setTimeout(() => {
+                        titleOverlay.style.opacity = '0';
+                        setTimeout(() => titleOverlay.remove(), 1500);
+                    }, 500);
+                };
+
+            } catch (error) {
+                console.error("[Assembly Line] Failed:", error);
+                streamText.innerText = `CRITICAL ERROR: Siphon Failed (${error.message})`;
+                streamBar.style.backgroundColor = '#ff0000';
+            }
+        });
+    </script>
+</body>
+</html>
