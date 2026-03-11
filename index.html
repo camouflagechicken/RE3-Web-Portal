@@ -36,15 +36,6 @@
             z-index: 10;
         }
 
-        /* The Glass Overlay - Sits directly above the emulator */
-        #glass-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 40;
-            display: none;
-            cursor: crosshair;
-        }
-
         #architect-title {
             position: absolute;
             inset: 0;
@@ -179,8 +170,6 @@
         </div>
 
         <div id="ejs-target"></div>
-        
-        <div id="glass-overlay"></div>
 
         <div id="modern-hud">
             <div class="hud-element">
@@ -270,9 +259,6 @@
         const streamBar = document.getElementById('data-stream-bar');
         const streamText = document.getElementById('stream-text');
         const modernHud = document.getElementById('modern-hud');
-        const glassOverlay = document.getElementById('glass-overlay');
-
-        window.addEventListener('contextmenu', e => e.preventDefault());
 
         bootBtn.addEventListener('click', async () => {
             bootBtn.style.display = 'none';
@@ -302,7 +288,7 @@
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
                 
-                // CORRECTED PC MATRIX (As requested)
+                // --- THE VERIFIED PC MATRIX ---
                 const pcMapping = { 
                     0: { value: 't' },         // Cross (Shoot)
                     1: { value: 'shift' },     // Square (Run)
@@ -356,43 +342,46 @@
                 window.EJS_onGameStart = function() {
                     setTimeout(() => {
                         titleOverlay.style.opacity = '0';
-                        if (!isTouchDevice) {
-                            modernHud.style.opacity = '1';
-                            glassOverlay.style.display = 'block'; // Activate the Glass Overlay
-                        }
+                        if (!isTouchDevice) modernHud.style.opacity = '1';
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE OVERSEER (GLASS METHOD) ---
-                    const simulateKey = (key, code, keyCode, type) => {
-                        const eventObj = { key: key, code: code, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true, composed: true };
-                        window.dispatchEvent(new KeyboardEvent(type, eventObj));
-                        
-                        const iframe = document.querySelector('#ejs-target iframe');
-                        if (iframe && iframe.contentWindow) {
-                            iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, eventObj));
-                            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-                            if (innerDoc) {
-                                innerDoc.dispatchEvent(new KeyboardEvent(type, eventObj));
-                                const canvas = innerDoc.querySelector('canvas');
-                                if (canvas) canvas.dispatchEvent(new KeyboardEvent(type, eventObj));
-                            }
-                        }
-                    };
+                    // --- THE RESTORED APEX SCRIPT ---
 
-                    glassOverlay.addEventListener('mousedown', async (e) => {
-                        if (document.pointerLockElement !== glassOverlay) {
-                            try { await glassOverlay.requestPointerLock(); } catch (err) {}
-                        } else {
-                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keydown'); // L-Click -> T (Shoot)
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown'); // R-Click -> R (Aim)
+                    // 1. Physically Block the Browser from using Tab to navigate away
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'Tab') e.preventDefault(); 
+                    });
+
+                    // 2. Block Right-Click Context Menu natively
+                    window.addEventListener('contextmenu', e => e.preventDefault());
+
+                    // 3. Pointer Lock applied directly to the game container
+                    const ejsTarget = document.getElementById('ejs-target');
+                    ejsTarget.addEventListener('mousedown', async () => {
+                        if (!isTouchDevice && document.pointerLockElement !== ejsTarget) {
+                            try { await ejsTarget.requestPointerLock(); } catch (err) {}
                         }
                     });
 
-                    glassOverlay.addEventListener('mouseup', (e) => {
-                        if (document.pointerLockElement === glassOverlay) {
-                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
+                    // 4. Mouse Injection using the proven window dispatch logic
+                    const injectKey = (key, code, keyCode, type) => {
+                        window.dispatchEvent(new KeyboardEvent(type, { 
+                            key: key, code: code, keyCode: keyCode, bubbles: true 
+                        }));
+                    };
+
+                    window.addEventListener('mousedown', (e) => {
+                        if (document.pointerLockElement === ejsTarget) {
+                            if (e.button === 0) { e.preventDefault(); injectKey('t', 'KeyT', 84, 'keydown'); } // L-Click -> T (Shoot)
+                            if (e.button === 2) { e.preventDefault(); injectKey('r', 'KeyR', 82, 'keydown'); } // R-Click -> R (Aim)
+                        }
+                    });
+
+                    window.addEventListener('mouseup', (e) => {
+                        if (document.pointerLockElement === ejsTarget) {
+                            if (e.button === 0) injectKey('t', 'KeyT', 84, 'keyup');
+                            if (e.button === 2) injectKey('r', 'KeyR', 82, 'keyup');
                         }
                     });
                 };
@@ -405,6 +394,4 @@
     </script>
 </body>
 </html>
-
-
 
