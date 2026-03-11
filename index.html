@@ -159,6 +159,7 @@
             border-radius: 3px; 
             font-weight: bold; 
             color: #fff;
+            font-size: 0.85em;
         }
 
         #close-modal-btn {
@@ -233,14 +234,11 @@
             <div class="modal-content">
                 <h2>SYSTEM LEDGER</h2>
                 <ul>
-                    <li><span>D-Pad</span> <span class="key-badge">Arrow Keys</span></li>
-                    <li><span>Cross (X)</span> <span class="key-badge">Z</span></li>
-                    <li><span>Circle (O)</span> <span class="key-badge">X</span></li>
-                    <li><span>Square (□)</span> <span class="key-badge">A</span></li>
-                    <li><span>Triangle (△)</span> <span class="key-badge">S</span></li>
-                    <li><span>L1 / R1</span> <span class="key-badge">Q / W</span></li>
-                    <li><span>Start</span> <span class="key-badge">Enter</span></li>
-                    <li><span>Select</span> <span class="key-badge">Shift</span></li>
+                    <li><span>Move</span> <span class="key-badge">D-Pad / W A S D</span></li>
+                    <li><span>Aim</span> <span class="key-badge">R1 / Right Click</span></li>
+                    <li><span>Action</span> <span class="key-badge">Cross / L-Click / Space</span></li>
+                    <li><span>Run</span> <span class="key-badge">Square / Shift</span></li>
+                    <li><span>Inventory</span> <span class="key-badge">Start / Enter</span></li>
                 </ul>
                 <button id="close-modal-btn">ACKNOWLEDGE</button>
             </div>
@@ -317,6 +315,67 @@
                 btn.addEventListener('touchstart', (e) => { e.preventDefault(); dispatchTouch(id, 'keydown'); }, { passive: false });
                 btn.addEventListener('touchend', (e) => { e.preventDefault(); dispatchTouch(id, 'keyup'); }, { passive: false });
             });
+        } else {
+            // PC Translation Matrix
+            const pcKeyMap = {
+                'w': 'ArrowUp',
+                's': 'ArrowDown',
+                'a': 'ArrowLeft',
+                'd': 'ArrowRight',
+                'W': 'ArrowUp',
+                'S': 'ArrowDown',
+                'A': 'ArrowLeft',
+                'D': 'ArrowRight',
+                'Shift': 'a',    // Square (Run)
+                ' ': 'z',        // Space -> Cross (Action)
+                'Control': 'x'   // Cancel / Circle
+            };
+
+            const dispatchPCInput = (targetKey, type) => {
+                const ejsIframe = document.querySelector('#ejs-target iframe');
+                if (ejsIframe && ejsIframe.contentDocument) {
+                    ejsIframe.contentDocument.dispatchEvent(new KeyboardEvent(type, { key: targetKey, bubbles: true }));
+                }
+            };
+
+            window.addEventListener('keydown', (e) => {
+                if (pcKeyMap[e.key]) {
+                    e.preventDefault();
+                    dispatchPCInput(pcKeyMap[e.key], 'keydown');
+                }
+            }, { passive: false });
+
+            window.addEventListener('keyup', (e) => {
+                if (pcKeyMap[e.key]) {
+                    e.preventDefault();
+                    dispatchPCInput(pcKeyMap[e.key], 'keyup');
+                }
+            });
+
+            window.addEventListener('mousedown', (e) => {
+                // Ensure clicks directly on EJS iframe elements or overlay register correctly
+                if (e.button === 0) { // Left Click
+                    e.preventDefault();
+                    dispatchPCInput('z', 'keydown'); // Cross (Action)
+                } else if (e.button === 2) { // Right Click
+                    e.preventDefault();
+                    dispatchPCInput('w', 'keydown'); // R1 (Aim)
+                }
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (e.button === 0) {
+                    e.preventDefault();
+                    dispatchPCInput('z', 'keyup');
+                } else if (e.button === 2) {
+                    e.preventDefault();
+                    dispatchPCInput('w', 'keyup');
+                }
+            });
+
+            window.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Block right-click menu
+            });
         }
 
         const controlsBtn = document.getElementById('controls-btn');
@@ -355,9 +414,9 @@
 
             await initDB;
 
-            const totalChunks = 5;
+            const totalChunks = 8;
             const chunkArray =[];
-            const baseUrl = 'https://huggingface.co/datasets/camouflagechicken/RE3-Data-Core/resolve/main/Resident%20Evil%203%20-%20Nemesis.chd.part';
+            const baseUrl = 'https://huggingface.co/datasets/camouflagechicken/RE3-Data-Core/resolve/main/Resident%20Evil%203%20-%20Nemesis%20(USA).chd.part';
 
             try {
                 for (let i = 0; i < totalChunks; i++) {
@@ -385,6 +444,7 @@
                 window.EJS_player = '#ejs-target';
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
+                window.EJS_hideControls = true;
                 window.EJS_gameUrl = objectUrl; 
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 window.EJS_color = '#000000';
