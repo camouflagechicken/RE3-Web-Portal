@@ -381,14 +381,14 @@
                     5: { value: 's' },         // D-Pad Down (Back)
                     6: { value: 'a' },         // D-Pad Left (Turn Left)
                     7: { value: 'd' },         // D-Pad Right (Turn Right)
-                    8: { value: 'x' },         // Circle (Cancel)
-                    9: { value: 'c' },         // Triangle (Map)
+                    8: { value: 'c' },         // Circle (Cancel)
+                    9: { value: 'tab' },       // Triangle (Map)
                     10: { value: 'q' },        // L1 (Switch Target)
                     11: { value: 'r' },        // R1 (Aim)
-                    12: { value: '1' },        // L2
-                    13: { value: '2' },        // R2
-                    14: { value: '3' },        // L3
-                    15: { value: '4' },        // R3
+                    12: { value: 'z' },        // L2
+                    13: { value: 'f' },        // R2 (Aim at barrels)
+                    14: { value: '5' },        // L3
+                    15: { value: '6' },        // R3
                     16: { value: 'escape' }    // Home/Menu
                 };
 
@@ -428,43 +428,48 @@
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE OVERSEER SCRIPT ---
+                    // --- THE APEX OVERSEER SCRIPT ---
 
-                    // 1. Absolute Kill Switch for the Right-Click Menu
+                    // 1. Absolute Kill Switch for Right-Click
                     window.addEventListener('contextmenu', (e) => {
-                        e.stopImmediatePropagation();
                         e.preventDefault();
-                    }, true);
+                        e.stopPropagation();
+                    }, true); // 'true' forces it into the Capture Phase
 
-                    // 2. The Focus Trap (Pointer Lock)
-                    const ejsTarget = document.getElementById('ejs-target');
-                    ejsTarget.addEventListener('click', async () => {
-                        const canvas = ejsTarget.querySelector('canvas');
-                        if (canvas && document.pointerLockElement !== canvas) {
-                            try { await canvas.requestPointerLock(); } catch (err) {}
+                    // 2. Hardware Signal Injector
+                    const injectHardwareSignal = (key, code, keyCode, type) => {
+                        const event = new KeyboardEvent(type, { key: key, code: code, keyCode: keyCode, bubbles: true });
+                        window.dispatchEvent(event);
+                        const iframe = document.querySelector('#ejs-target iframe');
+                        if (iframe && iframe.contentDocument) {
+                            iframe.contentDocument.dispatchEvent(new KeyboardEvent(type, { key: key, code: code, keyCode: keyCode, bubbles: true }));
                         }
-                    });
-
-                    // 3. Mouse-to-Keyboard Injection
-                    const simulateKey = (key, code, keyCode, type) => {
-                        window.dispatchEvent(new KeyboardEvent(type, {
-                            key: key, code: code, keyCode: keyCode, bubbles: true, cancelable: true
-                        }));
                     };
 
+                    // 3. The Mouse Trap
                     window.addEventListener('mousedown', (e) => {
-                        if (document.pointerLockElement) { // Only inject if you are locked into the game
-                            if (e.button === 0) simulateKey(' ', 'Space', 32, 'keydown');     // L-Click -> Space
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown');      // R-Click -> R
+                        if (e.button === 0) { // Left Click -> Space (Action/Shoot)
+                            e.preventDefault();
+                            e.stopPropagation();
+                            injectHardwareSignal(' ', 'Space', 32, 'keydown');
+                        } else if (e.button === 2) { // Right Click -> R (Aim)
+                            e.preventDefault();
+                            e.stopPropagation();
+                            injectHardwareSignal('r', 'KeyR', 82, 'keydown');
                         }
-                    });
+                    }, true);
 
                     window.addEventListener('mouseup', (e) => {
-                        if (document.pointerLockElement) {
-                            if (e.button === 0) simulateKey(' ', 'Space', 32, 'keyup');
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
+                        if (e.button === 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            injectHardwareSignal(' ', 'Space', 32, 'keyup');
+                        } else if (e.button === 2) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            injectHardwareSignal('r', 'KeyR', 82, 'keyup');
                         }
-                    });
+                    }, true);
                 };
 
             } catch (error) {
@@ -475,4 +480,3 @@
     </script>
 </body>
 </html>
-
