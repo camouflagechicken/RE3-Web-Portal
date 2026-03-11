@@ -94,15 +94,15 @@
             color: #fff;
         }
 
-        /* --- THE TACTICAL HUD --- */
+        /* --- THE MINIMAL HUD (HUD 2.0) --- */
         #modern-hud {
             position: absolute;
-            bottom: 25px;
-            right: 30px;
+            bottom: 30px;
+            right: 40px;
             display: flex;
-            gap: 15px;
+            gap: 20px; /* Space between the two icons */
             z-index: 100;
-            pointer-events: none; /* Prevents HUD from blocking mouse clicks */
+            pointer-events: none; /* Passes clicks through to the game */
             opacity: 0;
             transition: opacity 2s ease-in-out;
         }
@@ -110,41 +110,30 @@
         .hud-element {
             display: flex;
             align-items: center;
-            background: rgba(15, 15, 15, 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            /* No background, no borders, no blur. Just floating data. */
         }
 
         .hud-key {
-            background: rgba(255, 255, 255, 0.9);
-            color: #000;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.9); /* Floating white text */
             font-weight: 700;
-            font-size: 0.75rem;
-            padding: 3px 6px;
-            border-radius: 3px;
-            margin-right: 10px;
+            font-size: 0.85rem;
+            margin-right: 8px; /* Compact space to the symbol */
             letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', sans-serif; /* Clean modern font */
         }
 
         .hud-label {
-            color: #ccc;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 500;
             display: flex;
             align-items: center;
+            /* Text label (Map/Inventory) removed entirely via HTML */
         }
 
         .hud-icon {
-            width: 14px;
-            height: 14px;
-            fill: #aaa;
-            margin-right: 6px;
+            width: 16px; /* Slightly larger, crisp icons */
+            height: 16px;
+            fill: rgba(255, 255, 255, 0.8); /* Floating white icons */
         }
         /* ------------------------ */
 
@@ -205,15 +194,13 @@
                 <div class="hud-key">TAB</div>
                 <div class="hud-label">
                     <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-                    Map
-                </div>
+                    </div>
             </div>
             <div class="hud-element">
                 <div class="hud-key">E</div>
                 <div class="hud-label">
-                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
-                    Inventory
-                </div>
+                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2 2v2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                    </div>
             </div>
         </div>
 
@@ -323,24 +310,23 @@
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
                 
-                // FINAL ALIGNED PC MATRIX
                 const pcMapping = { 
                     0: { value: 't' },         // Cross (Shoot)
-                    1: { value: 'x' },         // Circle (Cancel)
-                    2: { value: 'shift' },     // Square (Run)
-                    3: { value: 'tab' },       // Triangle (Map)
-                    4: { value: 'q' },         // L1 (Switch Target)
-                    5: { value: 'r' },         // R1 (Aim)
-                    6: { value: '1' },         // L2
-                    7: { value: '2' },         // R2
-                    8: { value: 'space' },     // Select (Pause)
-                    9: { value: 'e' },         // Start (Inventory)
-                    10: { value: '3' },        // L3
-                    11: { value: '4' },        // R3
-                    12: { value: 'w' },        // D-Pad Up (Forward)
-                    13: { value: 's' },        // D-Pad Down (Back)
-                    14: { value: 'a' },        // D-Pad Left (Turn Left)
-                    15: { value: 'd' },        // D-Pad Right (Turn Right)
+                    1: { value: 'shift' },     // Square (Run)
+                    2: { value: 'space' },     // Select (Pause)
+                    3: { value: 'e' },         // Start (Inventory)
+                    4: { value: 'w' },         // D-Pad Up (Forward)
+                    5: { value: 's' },         // D-Pad Down (Back)
+                    6: { value: 'a' },         // D-Pad Left (Turn Left)
+                    7: { value: 'd' },         // D-Pad Right (Turn Right)
+                    8: { value: 'x' },         // Circle (Cancel)
+                    9: { value: 'tab' },       // Triangle (Map)
+                    10: { value: 'q' },        // L1 (Switch Target)
+                    11: { value: 'r' },        // R1 (Aim)
+                    12: { value: '1' },        // L2
+                    13: { value: '2' },        // R2
+                    14: { value: '3' },        // L3
+                    15: { value: '4' },        // R3
                     16: { value: 'escape' }    // Home/Menu
                 };
 
@@ -381,22 +367,17 @@
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE APEX OVERSEER SCRIPT (FIXED) ---
+                    // --- THE UN-CHOKED MOUSE TRAP ---
 
-                    // 1. Context Menu Kill Switch (No capture phase)
-                    window.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                    });
+                    window.addEventListener('contextmenu', e => e.preventDefault());
 
-                    // 2. The Focus Trap (Pointer Lock)
-                    const ejsTarget = document.getElementById('ejs-target');
-                    ejsTarget.addEventListener('mousedown', async () => {
+                    const viewport = document.getElementById('viewport-container');
+                    viewport.addEventListener('click', async () => {
                         if (!isTouchDevice && document.pointerLockElement !== document.body) {
                             try { await document.body.requestPointerLock(); } catch (err) {}
                         }
                     });
 
-                    // 3. Hardware Signal Injector
                     const simulateKey = (key, code, keyCode, type) => {
                         const eventObj = { key: key, code: code, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true, composed: true };
                         window.dispatchEvent(new KeyboardEvent(type, eventObj));
@@ -404,17 +385,16 @@
                         const iframe = document.querySelector('#ejs-target iframe');
                         if (iframe && iframe.contentWindow) {
                             iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, eventObj));
-                            if (iframe.contentDocument.activeElement) {
+                            if (iframe.contentDocument && iframe.contentDocument.activeElement) {
                                 iframe.contentDocument.activeElement.dispatchEvent(new KeyboardEvent(type, eventObj));
                             }
                         }
                     };
 
-                    // 4. The Mouse Trap
                     window.addEventListener('mousedown', (e) => {
                         if (document.pointerLockElement) {
-                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keydown'); // L-Click -> T (Shoot)
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown'); // R-Click -> R (Aim)
+                            if (e.button === 0) { e.preventDefault(); simulateKey('t', 'KeyT', 84, 'keydown'); } // L-Click -> T (Shoot)
+                            if (e.button === 2) { e.preventDefault(); simulateKey('r', 'KeyR', 82, 'keydown'); } // R-Click -> R (Aim)
                         }
                     });
 
