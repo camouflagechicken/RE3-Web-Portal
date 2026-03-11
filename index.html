@@ -235,8 +235,8 @@
                 <h2>SYSTEM LEDGER</h2>
                 <ul>
                     <li><span>Move</span> <span class="key-badge">W A S D</span></li>
-                    <li><span>Aim</span> <span class="key-badge">R</span></li>
-                    <li><span>Action/Shoot</span> <span class="key-badge">Space</span></li>
+                    <li><span>Aim</span> <span class="key-badge">R-Click (or R)</span></li>
+                    <li><span>Shoot</span> <span class="key-badge">L-Click (or Space)</span></li>
                     <li><span>Run</span> <span class="key-badge">Shift</span></li>
                     <li><span>Inventory</span> <span class="key-badge">E</span></li>
                 </ul>
@@ -284,7 +284,7 @@
             };
             request.onsuccess = (e) => {
                 db = e.target.result;
-                console.log("[Ledger] Successfully mounted pre-flight. Storage verified.");
+                console.log("[Ledger] Successfully mounted pre-flight.");
                 resolve();
             };
             request.onerror = (e) => reject(e);
@@ -297,17 +297,27 @@
             controllerLayer.style.display = 'block';
             
             const buttons = document.querySelectorAll('.btn');
+            // Perfectly aligned touch controls mapping to our new PC WASD setup
             const touchMap = {
-                'DPAD_UP': 'ArrowUp', 'DPAD_DOWN': 'ArrowDown', 'DPAD_LEFT': 'ArrowLeft', 'DPAD_RIGHT': 'ArrowRight',
-                'CROSS': 'z', 'CIRCLE': 'x', 'SQUARE': 'a', 'TRIANGLE': 's',
-                'L1': 'q', 'R1': 'w', 'START': 'Enter', 'SELECT': 'Shift'
+                'DPAD_UP': { key: 'w', code: 'KeyW', keyCode: 87 },
+                'DPAD_DOWN': { key: 's', code: 'KeyS', keyCode: 83 },
+                'DPAD_LEFT': { key: 'a', code: 'KeyA', keyCode: 65 },
+                'DPAD_RIGHT': { key: 'd', code: 'KeyD', keyCode: 68 },
+                'CROSS': { key: ' ', code: 'Space', keyCode: 32 },
+                'CIRCLE': { key: 'x', code: 'KeyX', keyCode: 88 },
+                'SQUARE': { key: 'Shift', code: 'ShiftLeft', keyCode: 16 },
+                'TRIANGLE': { key: 'c', code: 'KeyC', keyCode: 67 },
+                'L1': { key: 'q', code: 'KeyQ', keyCode: 81 },
+                'R1': { key: 'r', code: 'KeyR', keyCode: 82 },
+                'START': { key: 'e', code: 'KeyE', keyCode: 69 },
+                'SELECT': { key: 'Backspace', code: 'Backspace', keyCode: 8 }
             };
 
-            function dispatchTouch(key, type) {
-                const ejsIframe = document.querySelector('#ejs-target iframe');
-                if (ejsIframe && ejsIframe.contentDocument) {
-                    ejsIframe.contentDocument.dispatchEvent(new KeyboardEvent(type, { key: touchMap[key], bubbles: true }));
-                }
+            function dispatchTouch(id, type) {
+                const map = touchMap[id];
+                window.dispatchEvent(new KeyboardEvent(type, { 
+                    key: map.key, code: map.code, keyCode: map.keyCode, bubbles: true 
+                }));
             }
 
             buttons.forEach(btn => {
@@ -321,13 +331,8 @@
         const controlsModal = document.getElementById('controls-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
 
-        controlsBtn.addEventListener('click', () => {
-            controlsModal.style.display = 'flex';
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            controlsModal.style.display = 'none';
-        });
+        controlsBtn.addEventListener('click', () => { controlsModal.style.display = 'flex'; });
+        closeModalBtn.addEventListener('click', () => { controlsModal.style.display = 'none'; });
 
         const bootBtn = document.getElementById('boot-btn');
         const titleOverlay = document.getElementById('architect-title');
@@ -341,37 +346,20 @@
             streamContainer.style.display = 'block';
             streamText.style.display = 'block';
 
-            if (performance && performance.memory) {
-                const heapLimit = performance.memory.jsHeapSizeLimit;
-                const isoSizeEstimated = 0.7 * 1024 * 1024 * 1024;
-                if (heapLimit < isoSizeEstimated) {
-                    console.warn(`[Memory Guard] WARNING: Browser JS Heap Limit (${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB) is unusually low. The tab may crash during buffer.`);
-                } else {
-                    console.log(`[Memory Guard] VRAM Heap Check Passed: ${(heapLimit / 1024 / 1024 / 1024).toFixed(2)} GB available.`);
-                }
-            }
-
             await initDB;
 
             const totalChunks = 8;
-            const chunkArray =[];
+            const chunkArray = [];
             const baseUrl = 'https://huggingface.co/datasets/camouflagechicken/RE3-Data-Core/resolve/main/Resident%20Evil%203%20-%20Nemesis%20(USA).chd.part';
 
             try {
                 for (let i = 0; i < totalChunks; i++) {
                     streamText.innerText = `Siphoning Node ${i + 1} of ${totalChunks}...`;
-                    
                     const response = await fetch(baseUrl + i);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status} on chunk part${i}`);
-                    }
-                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status} on chunk part${i}`);
                     const buffer = await response.arrayBuffer();
                     chunkArray.push(buffer);
-                    
-                    const percentComplete = ((i + 1) / totalChunks) * 100;
-                    streamBar.style.width = `${percentComplete}%`;
+                    streamBar.style.width = `${((i + 1) / totalChunks) * 100}%`;
                 }
 
                 streamText.innerText = `FUSING CHUNKS IN VRAM...`;
@@ -404,15 +392,8 @@
                     16: { value: 'escape' }    // Home/Menu
                 };
 
-                window.EJS_defaultControls = { 
-                    0: pcMapping, 
-                    1: pcMapping, 
-                    2: pcMapping, 
-                    3: pcMapping 
-                };
-                
+                window.EJS_defaultControls = { 0: pcMapping, 1: pcMapping, 2: pcMapping, 3: pcMapping };
                 window.EJS_Buttons = { playPause: false, restart: false, mute: false, settings: false, fullscreen: false, saveState: false, loadState: false, screenRecord: false, gamepad: false, cheat: false, volume: false, saveSavFiles: false, loadSavFiles: false, quickSave: false, quickLoad: false, screenshot: false, cacheManager: false };
-                
                 window.EJS_gameUrl = objectUrl; 
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 window.EJS_color = '#000000';
@@ -423,7 +404,6 @@
                     const tx = db.transaction(storeName, "readwrite");
                     const store = tx.objectStore(storeName);
                     store.put({ id: "slot1", stateData: data });
-                    console.log("[Ledger] State committed to local RAM.");
                 };
 
                 window.EJS_onLoadState = function() {
@@ -447,10 +427,47 @@
                         titleOverlay.style.opacity = '0';
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
+
+                    // --- THE OVERSEER SCRIPT ---
+
+                    // 1. Absolute Kill Switch for the Right-Click Menu
+                    window.addEventListener('contextmenu', (e) => {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                    }, true);
+
+                    // 2. The Focus Trap (Pointer Lock)
+                    const ejsTarget = document.getElementById('ejs-target');
+                    ejsTarget.addEventListener('click', async () => {
+                        const canvas = ejsTarget.querySelector('canvas');
+                        if (canvas && document.pointerLockElement !== canvas) {
+                            try { await canvas.requestPointerLock(); } catch (err) {}
+                        }
+                    });
+
+                    // 3. Mouse-to-Keyboard Injection
+                    const simulateKey = (key, code, keyCode, type) => {
+                        window.dispatchEvent(new KeyboardEvent(type, {
+                            key: key, code: code, keyCode: keyCode, bubbles: true, cancelable: true
+                        }));
+                    };
+
+                    window.addEventListener('mousedown', (e) => {
+                        if (document.pointerLockElement) { // Only inject if you are locked into the game
+                            if (e.button === 0) simulateKey(' ', 'Space', 32, 'keydown');     // L-Click -> Space
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown');      // R-Click -> R
+                        }
+                    });
+
+                    window.addEventListener('mouseup', (e) => {
+                        if (document.pointerLockElement) {
+                            if (e.button === 0) simulateKey(' ', 'Space', 32, 'keyup');
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
+                        }
+                    });
                 };
 
             } catch (error) {
-                console.error("[Assembly Line] Failed:", error);
                 streamText.innerText = `CRITICAL ERROR: Siphon Failed (${error.message})`;
                 streamBar.style.backgroundColor = '#ff0000';
             }
@@ -458,8 +475,4 @@
     </script>
 </body>
 </html>
-
-
-
-
 
