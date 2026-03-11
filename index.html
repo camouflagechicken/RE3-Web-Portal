@@ -12,7 +12,7 @@
             height: 100vh;
             background-color: #000;
             color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -56,6 +56,7 @@
             text-transform: uppercase;
             margin-bottom: 20px;
             text-align: center;
+            font-family: 'Courier New', Courier, monospace;
         }
 
         #data-stream-container {
@@ -76,107 +77,76 @@
             transition: width 0.1s linear;
         }
 
-        #boot-btn {
+        #boot-btn, #controls-btn {
             padding: 10px 30px;
             background: transparent;
             border: 1px solid #555;
             color: #aaa;
             cursor: pointer;
-            font-family: inherit;
+            font-family: 'Courier New', Courier, monospace;
             letter-spacing: 2px;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
-        #boot-btn:hover {
+        #boot-btn:hover, #controls-btn:hover {
             border-color: #fff;
             color: #fff;
         }
 
-        #controls-btn {
-            padding: 8px 20px;
-            background: transparent;
-            border: 1px solid #333;
-            color: #888;
-            cursor: pointer;
-            font-family: inherit;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            margin-top: 15px;
-            transition: all 0.3s;
-        }
-
-        #controls-btn:hover {
-            border-color: #aaa;
-            color: #fff;
-        }
-
-        #controls-modal {
+        /* --- THE TACTICAL HUD --- */
+        #modern-hud {
             position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
+            bottom: 25px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            pointer-events: none; /* Prevents HUD from blocking mouse clicks */
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .hud-element {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
-        .modal-content {
-            background: #111;
-            border: 1px solid #333;
-            padding: 30px;
-            border-radius: 5px;
-            text-align: left;
-            max-width: 400px;
-            width: 80%;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        .hud-key {
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 3px;
+            margin-right: 10px;
+            letter-spacing: 0.5px;
         }
 
-        .modal-content h2 { 
-            margin-top: 0; 
-            border-bottom: 1px solid #333; 
-            padding-bottom: 10px; 
-            text-align: center; 
+        .hud-label {
             color: #ccc;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
         }
 
-        .modal-content ul { 
-            list-style: none; 
-            padding: 0; 
-            line-height: 2; 
+        .hud-icon {
+            width: 14px;
+            height: 14px;
+            fill: #aaa;
+            margin-right: 6px;
         }
-
-        .modal-content li { 
-            display: flex; 
-            justify-content: space-between; 
-            border-bottom: 1px solid #222; 
-        }
-
-        .key-badge { 
-            background: #333; 
-            padding: 2px 8px; 
-            border-radius: 3px; 
-            font-weight: bold; 
-            color: #fff;
-            font-size: 0.85em;
-        }
-
-        #close-modal-btn {
-            margin-top: 20px; 
-            width: 100%; 
-            padding: 10px; 
-            background: #222; 
-            border: 1px solid #444; 
-            color: #fff; 
-            cursor: pointer;
-            font-family: inherit;
-            transition: background 0.3s;
-        }
-
-        #close-modal-btn:hover { 
-            background: #444; 
-        }
+        /* ------------------------ */
 
         #controller-layer {
             position: absolute;
@@ -201,7 +171,6 @@
         }
         
         .btn:active { opacity: 0.6; }
-
         .btn-shoulder { width: 8%; height: 12%; border-radius: 8px; top: 5%; }
         #L1 { left: 5%; } #R1 { right: 5%; }
         .cluster-dpad { position: absolute; bottom: 10%; left: 5%; width: 20%; aspect-ratio: 1; pointer-events: none; }
@@ -223,28 +192,30 @@
         <div id="architect-title">
             <h1>RESIDENT EVIL 3: NEMESIS</h1>
             <button id="boot-btn">ENTER RACCOON CITY</button>
-            <button id="controls-btn">VIEW CONTROLS</button>
             <div id="data-stream-container">
                 <div id="data-stream-bar"></div>
             </div>
-            <div id="stream-text" style="margin-top:10px; font-size:0.8rem; color:#666; display:none;">ESTABLISHING CONNECTION...</div>
-        </div>
-
-        <div id="controls-modal">
-            <div class="modal-content">
-                <h2>SYSTEM LEDGER</h2>
-                <ul>
-                    <li><span>Move</span> <span class="key-badge">W A S D</span></li>
-                    <li><span>Aim</span> <span class="key-badge">R-Click (or R)</span></li>
-                    <li><span>Shoot</span> <span class="key-badge">L-Click (or Space)</span></li>
-                    <li><span>Run</span> <span class="key-badge">Shift</span></li>
-                    <li><span>Inventory</span> <span class="key-badge">E</span></li>
-                </ul>
-                <button id="close-modal-btn">ACKNOWLEDGE</button>
-            </div>
+            <div id="stream-text" style="margin-top:10px; font-size:0.8rem; color:#666; font-family: monospace; display:none;">ESTABLISHING CONNECTION...</div>
         </div>
 
         <div id="ejs-target"></div>
+
+        <div id="modern-hud">
+            <div class="hud-element">
+                <div class="hud-key">TAB</div>
+                <div class="hud-label">
+                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+                    Map
+                </div>
+            </div>
+            <div class="hud-element">
+                <div class="hud-key">E</div>
+                <div class="hud-label">
+                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                    Inventory
+                </div>
+            </div>
+        </div>
 
         <div id="controller-layer">
             <div class="btn btn-shoulder" id="L1" data-btn="L1">L1</div>
@@ -278,15 +249,9 @@
             const request = indexedDB.open(dbName, 1);
             request.onupgradeneeded = (e) => {
                 let localDB = e.target.result;
-                if (!localDB.objectStoreNames.contains(storeName)) {
-                    localDB.createObjectStore(storeName, { keyPath: "id" });
-                }
+                if (!localDB.objectStoreNames.contains(storeName)) localDB.createObjectStore(storeName, { keyPath: "id" });
             };
-            request.onsuccess = (e) => {
-                db = e.target.result;
-                console.log("[Ledger] Successfully mounted pre-flight.");
-                resolve();
-            };
+            request.onsuccess = (e) => { db = e.target.result; resolve(); };
             request.onerror = (e) => reject(e);
         });
 
@@ -295,29 +260,25 @@
 
         if (isTouchDevice) {
             controllerLayer.style.display = 'block';
-            
             const buttons = document.querySelectorAll('.btn');
-            // Perfectly aligned touch controls mapping to our new PC WASD setup
             const touchMap = {
                 'DPAD_UP': { key: 'w', code: 'KeyW', keyCode: 87 },
                 'DPAD_DOWN': { key: 's', code: 'KeyS', keyCode: 83 },
                 'DPAD_LEFT': { key: 'a', code: 'KeyA', keyCode: 65 },
                 'DPAD_RIGHT': { key: 'd', code: 'KeyD', keyCode: 68 },
-                'CROSS': { key: ' ', code: 'Space', keyCode: 32 },
+                'CROSS': { key: 't', code: 'KeyT', keyCode: 84 },
                 'CIRCLE': { key: 'x', code: 'KeyX', keyCode: 88 },
                 'SQUARE': { key: 'Shift', code: 'ShiftLeft', keyCode: 16 },
-                'TRIANGLE': { key: 'c', code: 'KeyC', keyCode: 67 },
+                'TRIANGLE': { key: 'Tab', code: 'Tab', keyCode: 9 },
                 'L1': { key: 'q', code: 'KeyQ', keyCode: 81 },
                 'R1': { key: 'r', code: 'KeyR', keyCode: 82 },
                 'START': { key: 'e', code: 'KeyE', keyCode: 69 },
-                'SELECT': { key: 'Backspace', code: 'Backspace', keyCode: 8 }
+                'SELECT': { key: ' ', code: 'Space', keyCode: 32 }
             };
 
             function dispatchTouch(id, type) {
                 const map = touchMap[id];
-                window.dispatchEvent(new KeyboardEvent(type, { 
-                    key: map.key, code: map.code, keyCode: map.keyCode, bubbles: true 
-                }));
+                window.dispatchEvent(new KeyboardEvent(type, { key: map.key, code: map.code, keyCode: map.keyCode, bubbles: true }));
             }
 
             buttons.forEach(btn => {
@@ -327,22 +288,15 @@
             });
         }
 
-        const controlsBtn = document.getElementById('controls-btn');
-        const controlsModal = document.getElementById('controls-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-
-        controlsBtn.addEventListener('click', () => { controlsModal.style.display = 'flex'; });
-        closeModalBtn.addEventListener('click', () => { controlsModal.style.display = 'none'; });
-
         const bootBtn = document.getElementById('boot-btn');
         const titleOverlay = document.getElementById('architect-title');
         const streamContainer = document.getElementById('data-stream-container');
         const streamBar = document.getElementById('data-stream-bar');
         const streamText = document.getElementById('stream-text');
+        const modernHud = document.getElementById('modern-hud');
 
         bootBtn.addEventListener('click', async () => {
             bootBtn.style.display = 'none';
-            controlsBtn.style.display = 'none';
             streamContainer.style.display = 'block';
             streamText.style.display = 'block';
 
@@ -356,39 +310,37 @@
                 for (let i = 0; i < totalChunks; i++) {
                     streamText.innerText = `Siphoning Node ${i + 1} of ${totalChunks}...`;
                     const response = await fetch(baseUrl + i);
-                    if (!response.ok) throw new Error(`HTTP ${response.status} on chunk part${i}`);
-                    const buffer = await response.arrayBuffer();
-                    chunkArray.push(buffer);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    chunkArray.push(await response.arrayBuffer());
                     streamBar.style.width = `${((i + 1) / totalChunks) * 100}%`;
                 }
 
-                streamText.innerText = `FUSING CHUNKS IN VRAM...`;
+                streamText.innerText = `BUFFERING VRAM...`;
                 const finalBlob = new Blob(chunkArray, { type: 'application/octet-stream' });
                 const objectUrl = URL.createObjectURL(finalBlob);
 
-                streamText.innerText = `BUFFERING INTO ENGINE...`;
-                
                 window.EJS_player = '#ejs-target';
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
                 
+                // FINAL ALIGNED PC MATRIX
                 const pcMapping = { 
-                    0: { value: 'space' },     // Cross (Action/Shoot)
-                    1: { value: 'shift' },     // Square (Run)
-                    2: { value: 'backspace' }, // Select
-                    3: { value: 'e' },         // Start (Inventory)
-                    4: { value: 'w' },         // D-Pad Up (Forward)
-                    5: { value: 's' },         // D-Pad Down (Back)
-                    6: { value: 'a' },         // D-Pad Left (Turn Left)
-                    7: { value: 'd' },         // D-Pad Right (Turn Right)
-                    8: { value: 'c' },         // Circle (Cancel)
-                    9: { value: 'tab' },       // Triangle (Map)
-                    10: { value: 'q' },        // L1 (Switch Target)
-                    11: { value: 'r' },        // R1 (Aim)
-                    12: { value: 'z' },        // L2
-                    13: { value: 'f' },        // R2 (Aim at barrels)
-                    14: { value: '5' },        // L3
-                    15: { value: '6' },        // R3
+                    0: { value: 't' },         // Cross (Shoot)
+                    1: { value: 'x' },         // Circle (Cancel)
+                    2: { value: 'shift' },     // Square (Run)
+                    3: { value: 'tab' },       // Triangle (Map)
+                    4: { value: 'q' },         // L1 (Switch Target)
+                    5: { value: 'r' },         // R1 (Aim)
+                    6: { value: '1' },         // L2
+                    7: { value: '2' },         // R2
+                    8: { value: 'space' },     // Select (Pause)
+                    9: { value: 'e' },         // Start (Inventory)
+                    10: { value: '3' },        // L3
+                    11: { value: '4' },        // R3
+                    12: { value: 'w' },        // D-Pad Up (Forward)
+                    13: { value: 's' },        // D-Pad Down (Back)
+                    14: { value: 'a' },        // D-Pad Left (Turn Left)
+                    15: { value: 'd' },        // D-Pad Right (Turn Right)
                     16: { value: 'escape' }    // Home/Menu
                 };
 
@@ -425,58 +377,61 @@
                 window.EJS_onGameStart = function() {
                     setTimeout(() => {
                         titleOverlay.style.opacity = '0';
+                        if (!isTouchDevice) modernHud.style.opacity = '1'; // Fade in the HUD
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE APEX OVERSEER SCRIPT ---
+                    // --- THE APEX OVERSEER SCRIPT (FIXED) ---
 
-                    // 1. Absolute Kill Switch for Right-Click
+                    // 1. Context Menu Kill Switch (No capture phase)
                     window.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
-                        e.stopPropagation();
-                    }, true); // 'true' forces it into the Capture Phase
+                    });
 
-                    // 2. Hardware Signal Injector
-                    const injectHardwareSignal = (key, code, keyCode, type) => {
-                        const event = new KeyboardEvent(type, { key: key, code: code, keyCode: keyCode, bubbles: true });
-                        window.dispatchEvent(event);
+                    // 2. The Focus Trap (Pointer Lock)
+                    const ejsTarget = document.getElementById('ejs-target');
+                    ejsTarget.addEventListener('mousedown', async () => {
+                        if (!isTouchDevice && document.pointerLockElement !== document.body) {
+                            try { await document.body.requestPointerLock(); } catch (err) {}
+                        }
+                    });
+
+                    // 3. Hardware Signal Injector
+                    const simulateKey = (key, code, keyCode, type) => {
+                        const eventObj = { key: key, code: code, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true, composed: true };
+                        window.dispatchEvent(new KeyboardEvent(type, eventObj));
+                        
                         const iframe = document.querySelector('#ejs-target iframe');
-                        if (iframe && iframe.contentDocument) {
-                            iframe.contentDocument.dispatchEvent(new KeyboardEvent(type, { key: key, code: code, keyCode: keyCode, bubbles: true }));
+                        if (iframe && iframe.contentWindow) {
+                            iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, eventObj));
+                            if (iframe.contentDocument.activeElement) {
+                                iframe.contentDocument.activeElement.dispatchEvent(new KeyboardEvent(type, eventObj));
+                            }
                         }
                     };
 
-                    // 3. The Mouse Trap
+                    // 4. The Mouse Trap
                     window.addEventListener('mousedown', (e) => {
-                        if (e.button === 0) { // Left Click -> Space (Action/Shoot)
-                            e.preventDefault();
-                            e.stopPropagation();
-                            injectHardwareSignal(' ', 'Space', 32, 'keydown');
-                        } else if (e.button === 2) { // Right Click -> R (Aim)
-                            e.preventDefault();
-                            e.stopPropagation();
-                            injectHardwareSignal('r', 'KeyR', 82, 'keydown');
+                        if (document.pointerLockElement) {
+                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keydown'); // L-Click -> T (Shoot)
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown'); // R-Click -> R (Aim)
                         }
-                    }, true);
+                    });
 
                     window.addEventListener('mouseup', (e) => {
-                        if (e.button === 0) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            injectHardwareSignal(' ', 'Space', 32, 'keyup');
-                        } else if (e.button === 2) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            injectHardwareSignal('r', 'KeyR', 82, 'keyup');
+                        if (document.pointerLockElement) {
+                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
                         }
-                    }, true);
+                    });
                 };
 
             } catch (error) {
-                streamText.innerText = `CRITICAL ERROR: Siphon Failed (${error.message})`;
+                streamText.innerText = `CRITICAL ERROR: Siphon Failed`;
                 streamBar.style.backgroundColor = '#ff0000';
             }
         });
     </script>
 </body>
 </html>
+
