@@ -383,8 +383,8 @@
                 window.EJS_player = '#ejs-target';
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
-                window.EJS_defaultControls = { 
-                0: { 
+                
+                const pcMapping = { 
                     0: { value: 'space' },   // Cross (Action/Shoot)
                     1: { value: 'x' },       // Circle (Cancel)
                     2: { value: 'shift' },   // Square (Run)
@@ -402,8 +402,15 @@
                     14: { value: 'a' },      // D-Pad Left (Turn Left)
                     15: { value: 'd' },      // D-Pad Right (Turn Right)
                     16: { value: 'escape' }  // Home/Menu
-                } 
                 };
+
+                window.EJS_defaultControls = { 
+                    0: pcMapping, 
+                    1: pcMapping, 
+                    2: pcMapping, 
+                    3: pcMapping 
+                };
+                
                 window.EJS_Buttons = { playPause: false, restart: false, mute: false, settings: false, fullscreen: false, saveState: false, loadState: false, screenRecord: false, gamepad: false, cheat: false, volume: false, saveSavFiles: false, loadSavFiles: false, quickSave: false, quickLoad: false, screenshot: false, cacheManager: false };
                 
                 window.EJS_gameUrl = objectUrl; 
