@@ -36,6 +36,15 @@
             z-index: 10;
         }
 
+        /* The Glass Overlay - Sits directly above the emulator */
+        #glass-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            display: none;
+            cursor: crosshair;
+        }
+
         #architect-title {
             position: absolute;
             inset: 0;
@@ -77,7 +86,7 @@
             transition: width 0.1s linear;
         }
 
-        #boot-btn, #controls-btn {
+        #boot-btn {
             padding: 10px 30px;
             background: transparent;
             border: 1px solid #555;
@@ -89,20 +98,20 @@
             margin-top: 10px;
         }
 
-        #boot-btn:hover, #controls-btn:hover {
+        #boot-btn:hover {
             border-color: #fff;
             color: #fff;
         }
 
-        /* --- THE MINIMAL HUD (HUD 2.0) --- */
+        /* MINIMAL HUD */
         #modern-hud {
             position: absolute;
             bottom: 30px;
             right: 40px;
             display: flex;
-            gap: 20px; /* Space between the two icons */
+            gap: 20px;
             z-index: 100;
-            pointer-events: none; /* Passes clicks through to the game */
+            pointer-events: none;
             opacity: 0;
             transition: opacity 2s ease-in-out;
         }
@@ -110,32 +119,23 @@
         .hud-element {
             display: flex;
             align-items: center;
-            /* No background, no borders, no blur. Just floating data. */
         }
 
         .hud-key {
             background: transparent;
-            color: rgba(255, 255, 255, 0.9); /* Floating white text */
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 700;
             font-size: 0.85rem;
-            margin-right: 8px; /* Compact space to the symbol */
+            margin-right: 8px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            font-family: 'Segoe UI', sans-serif; /* Clean modern font */
-        }
-
-        .hud-label {
-            display: flex;
-            align-items: center;
-            /* Text label (Map/Inventory) removed entirely via HTML */
         }
 
         .hud-icon {
-            width: 16px; /* Slightly larger, crisp icons */
+            width: 16px;
             height: 16px;
-            fill: rgba(255, 255, 255, 0.8); /* Floating white icons */
+            fill: rgba(255, 255, 255, 0.8);
         }
-        /* ------------------------ */
 
         #controller-layer {
             position: absolute;
@@ -146,19 +146,10 @@
         }
 
         .btn {
-            position: absolute;
-            background-color: #fff;
-            opacity: 0.3;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            user-select: none;
-            pointer-events: auto;
-            border-radius: 50%;
+            position: absolute; background-color: #fff; opacity: 0.3; color: #000;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; user-select: none; pointer-events: auto; border-radius: 50%;
         }
-        
         .btn:active { opacity: 0.6; }
         .btn-shoulder { width: 8%; height: 12%; border-radius: 8px; top: 5%; }
         #L1 { left: 5%; } #R1 { right: 5%; }
@@ -188,19 +179,17 @@
         </div>
 
         <div id="ejs-target"></div>
+        
+        <div id="glass-overlay"></div>
 
         <div id="modern-hud">
             <div class="hud-element">
                 <div class="hud-key">TAB</div>
-                <div class="hud-label">
-                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-                    </div>
+                <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
             </div>
             <div class="hud-element">
                 <div class="hud-key">E</div>
-                <div class="hud-label">
-                    <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2 2v2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
-                    </div>
+                <svg class="hud-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
             </div>
         </div>
 
@@ -281,6 +270,9 @@
         const streamBar = document.getElementById('data-stream-bar');
         const streamText = document.getElementById('stream-text');
         const modernHud = document.getElementById('modern-hud');
+        const glassOverlay = document.getElementById('glass-overlay');
+
+        window.addEventListener('contextmenu', e => e.preventDefault());
 
         bootBtn.addEventListener('click', async () => {
             bootBtn.style.display = 'none';
@@ -310,6 +302,7 @@
                 window.EJS_core = 'pcsx_rearmed'; 
                 window.EJS_gameName = 'Resident Evil 3: Nemesis';
                 
+                // CORRECTED PC MATRIX (As requested)
                 const pcMapping = { 
                     0: { value: 't' },         // Cross (Shoot)
                     1: { value: 'shift' },     // Square (Run)
@@ -363,56 +356,45 @@
                 window.EJS_onGameStart = function() {
                     setTimeout(() => {
                         titleOverlay.style.opacity = '0';
-                        if (!isTouchDevice) modernHud.style.opacity = '1'; 
+                        if (!isTouchDevice) {
+                            modernHud.style.opacity = '1';
+                            glassOverlay.style.display = 'block'; // Activate the Glass Overlay
+                        }
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE INJECTED OVERSEER SCRIPT ---
-                    const iframe = document.querySelector('#ejs-target iframe');
-                    
-                    if (iframe) {
-                        const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-                        const innerCanvas = innerDoc.querySelector('canvas');
-
-                        // 1. Block Context Menu inside the iframe
-                        innerDoc.addEventListener('contextmenu', e => e.preventDefault());
-
-                        // 2. Lock Pointer directly to the game canvas
-                        innerDoc.addEventListener('mousedown', async () => {
-                            if (!isTouchDevice && innerDoc.pointerLockElement !== innerCanvas) {
-                                try { await innerCanvas.requestPointerLock(); } catch (err) {}
+                    // --- THE OVERSEER (GLASS METHOD) ---
+                    const simulateKey = (key, code, keyCode, type) => {
+                        const eventObj = { key: key, code: code, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true, composed: true };
+                        window.dispatchEvent(new KeyboardEvent(type, eventObj));
+                        
+                        const iframe = document.querySelector('#ejs-target iframe');
+                        if (iframe && iframe.contentWindow) {
+                            iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, eventObj));
+                            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            if (innerDoc) {
+                                innerDoc.dispatchEvent(new KeyboardEvent(type, eventObj));
+                                const canvas = innerDoc.querySelector('canvas');
+                                if (canvas) canvas.dispatchEvent(new KeyboardEvent(type, eventObj));
                             }
-                        });
+                        }
+                    };
 
-                        // 3. Hardware Signal Injector (Fired from inside the matrix)
-                        const simulateKey = (key, code, keyCode, type) => {
-                            // Create the event using the iframe's native Event class so the engine trusts it
-                            const KeyboardEventClass = iframe.contentWindow.KeyboardEvent || window.KeyboardEvent;
-                            const eventObj = new KeyboardEventClass(type, { 
-                                key: key, code: code, keyCode: keyCode, which: keyCode, 
-                                bubbles: true, cancelable: true, composed: true 
-                            });
-                            
-                            // Emscripten listens on the canvas and document
-                            if (innerCanvas) innerCanvas.dispatchEvent(eventObj);
-                            innerDoc.dispatchEvent(eventObj);
-                        };
+                    glassOverlay.addEventListener('mousedown', async (e) => {
+                        if (document.pointerLockElement !== glassOverlay) {
+                            try { await glassOverlay.requestPointerLock(); } catch (err) {}
+                        } else {
+                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keydown'); // L-Click -> T (Shoot)
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keydown'); // R-Click -> R (Aim)
+                        }
+                    });
 
-                        // 4. The Mouse Trap
-                        innerDoc.addEventListener('mousedown', (e) => {
-                            if (innerDoc.pointerLockElement === innerCanvas) {
-                                if (e.button === 0) { e.preventDefault(); simulateKey('t', 'KeyT', 84, 'keydown'); } // L-Click -> T (Shoot)
-                                if (e.button === 2) { e.preventDefault(); simulateKey('r', 'KeyR', 82, 'keydown'); } // R-Click -> R (Aim)
-                            }
-                        });
-
-                        innerDoc.addEventListener('mouseup', (e) => {
-                            if (innerDoc.pointerLockElement === innerCanvas) {
-                                if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
-                                if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
-                            }
-                        });
-                    }
+                    glassOverlay.addEventListener('mouseup', (e) => {
+                        if (document.pointerLockElement === glassOverlay) {
+                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
+                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
+                        }
+                    });
                 };
 
             } catch (error) {
@@ -423,5 +405,6 @@
     </script>
 </body>
 </html>
+
 
 
