@@ -363,47 +363,56 @@
                 window.EJS_onGameStart = function() {
                     setTimeout(() => {
                         titleOverlay.style.opacity = '0';
-                        if (!isTouchDevice) modernHud.style.opacity = '1'; // Fade in the HUD
+                        if (!isTouchDevice) modernHud.style.opacity = '1'; 
                         setTimeout(() => titleOverlay.remove(), 1500);
                     }, 500);
 
-                    // --- THE UN-CHOKED MOUSE TRAP ---
+                    // --- THE INJECTED OVERSEER SCRIPT ---
+                    const iframe = document.querySelector('#ejs-target iframe');
+                    
+                    if (iframe) {
+                        const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const innerCanvas = innerDoc.querySelector('canvas');
 
-                    window.addEventListener('contextmenu', e => e.preventDefault());
+                        // 1. Block Context Menu inside the iframe
+                        innerDoc.addEventListener('contextmenu', e => e.preventDefault());
 
-                    const viewport = document.getElementById('viewport-container');
-                    viewport.addEventListener('click', async () => {
-                        if (!isTouchDevice && document.pointerLockElement !== document.body) {
-                            try { await document.body.requestPointerLock(); } catch (err) {}
-                        }
-                    });
-
-                    const simulateKey = (key, code, keyCode, type) => {
-                        const eventObj = { key: key, code: code, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true, composed: true };
-                        window.dispatchEvent(new KeyboardEvent(type, eventObj));
-                        
-                        const iframe = document.querySelector('#ejs-target iframe');
-                        if (iframe && iframe.contentWindow) {
-                            iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, eventObj));
-                            if (iframe.contentDocument && iframe.contentDocument.activeElement) {
-                                iframe.contentDocument.activeElement.dispatchEvent(new KeyboardEvent(type, eventObj));
+                        // 2. Lock Pointer directly to the game canvas
+                        innerDoc.addEventListener('mousedown', async () => {
+                            if (!isTouchDevice && innerDoc.pointerLockElement !== innerCanvas) {
+                                try { await innerCanvas.requestPointerLock(); } catch (err) {}
                             }
-                        }
-                    };
+                        });
 
-                    window.addEventListener('mousedown', (e) => {
-                        if (document.pointerLockElement) {
-                            if (e.button === 0) { e.preventDefault(); simulateKey('t', 'KeyT', 84, 'keydown'); } // L-Click -> T (Shoot)
-                            if (e.button === 2) { e.preventDefault(); simulateKey('r', 'KeyR', 82, 'keydown'); } // R-Click -> R (Aim)
-                        }
-                    });
+                        // 3. Hardware Signal Injector (Fired from inside the matrix)
+                        const simulateKey = (key, code, keyCode, type) => {
+                            // Create the event using the iframe's native Event class so the engine trusts it
+                            const KeyboardEventClass = iframe.contentWindow.KeyboardEvent || window.KeyboardEvent;
+                            const eventObj = new KeyboardEventClass(type, { 
+                                key: key, code: code, keyCode: keyCode, which: keyCode, 
+                                bubbles: true, cancelable: true, composed: true 
+                            });
+                            
+                            // Emscripten listens on the canvas and document
+                            if (innerCanvas) innerCanvas.dispatchEvent(eventObj);
+                            innerDoc.dispatchEvent(eventObj);
+                        };
 
-                    window.addEventListener('mouseup', (e) => {
-                        if (document.pointerLockElement) {
-                            if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
-                            if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
-                        }
-                    });
+                        // 4. The Mouse Trap
+                        innerDoc.addEventListener('mousedown', (e) => {
+                            if (innerDoc.pointerLockElement === innerCanvas) {
+                                if (e.button === 0) { e.preventDefault(); simulateKey('t', 'KeyT', 84, 'keydown'); } // L-Click -> T (Shoot)
+                                if (e.button === 2) { e.preventDefault(); simulateKey('r', 'KeyR', 82, 'keydown'); } // R-Click -> R (Aim)
+                            }
+                        });
+
+                        innerDoc.addEventListener('mouseup', (e) => {
+                            if (innerDoc.pointerLockElement === innerCanvas) {
+                                if (e.button === 0) simulateKey('t', 'KeyT', 84, 'keyup');
+                                if (e.button === 2) simulateKey('r', 'KeyR', 82, 'keyup');
+                            }
+                        });
+                    }
                 };
 
             } catch (error) {
@@ -414,4 +423,5 @@
     </script>
 </body>
 </html>
+
 
